@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Deploy Laravel Microservices via Docker Compose on Free-Tier EC2
+
+Parameters:
+  KeyName:
+    Description: SSH Key Pair Name
+    Type: AWS::EC2::KeyPair::KeyName
+
+Resources:
+  ECOMMERCEInstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow HTTP and SSH
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8000
+          ToPort: 9000
+          CidrIp: 0.0.0.0/0
+
+  ECOMMERCEInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      KeyName: !Ref KeyName
+      ImageId: ami-0fc5d935ebf8bc3bc # Amazon Linux 2023
+      SecurityGroupIds:
+        - !Ref ECOMMERCEInstanceSecurityGroup
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          sudo yum update -y
+
+          # Install Docker
+          sudo yum install -y docker
+          sudo systemctl enable docker
+          sudo systemctl start docker
+          sudo usermod -aG docker ec2-user
+
+          # Install Docker Compose
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-linux-x86_64" \
+            -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+
+          # Install Git
+          sudo yum install -y git
+
+          # Clone your repository
+          cd /home/ec2-user
+          git clone https://github.com/w33haa2/laravel-ecommerce ecommerce
+          cd ecommerce
+
+          # Run Docker Compose
+          sudo /usr/local/bin/docker-compose up -d --build
+
+Outputs:
+  PublicIP:
+    Description: Public IP of EC2 Instance
+    Value: !GetAtt ECOMMERCEInstance.PublicIp
+  URL:
+    Description: Open your main Laravel/Vue app
+    Value: !Sub "http://${ECOMMERCEInstance.PublicDnsName}:8000"
