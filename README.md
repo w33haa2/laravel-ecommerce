@@ -163,8 +163,6 @@ laravel-ecommerce/
 ├── docker-compose.yml            # Docker Compose configuration
 ├── cloudformation.yml            # AWS CloudFormation template
 ├── create-databases.sql          # Database initialization script
-├── LARAVEL_CONVENTIONS_ANALYSIS.md
-├── REFACTORING_SUMMARY.md
 └── README.md                     # This file
 ```
 
@@ -567,11 +565,6 @@ Request → Controller → Form Request (Validation) → Action (Business Logic)
 - **XSS Protection**: Vue.js automatic escaping
 - **CSRF Protection**: Laravel built-in CSRF tokens
 - **Environment Variables**: Sensitive data in `.env` files
-
-## 📝 Additional Documentation
-
-- [Laravel Conventions Analysis](./LARAVEL_CONVENTIONS_ANALYSIS.md) - Code quality analysis
-- [Refactoring Summary](./REFACTORING_SUMMARY.md) - Refactoring details and improvements
 
 ## 🤝 Contributing
 
