@@ -1,16 +1,44 @@
-AWSTemplateFormatVersion: 2010-09-09
-Description: Deploy Laravel Microservices via Docker Compose on Free-Tier EC2
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Deploy Laravel + Vue microservices via Docker Compose on a Free-Tier EC2 (ap-southeast-2)
+# Free Tier Notes:
+# - EC2: 750 hours/month of t2.micro (first 12 months)
+# - EBS: 30GB of General Purpose (SSD) storage (first 12 months)
+# - Data Transfer: 15GB outbound/month (first 12 months)
+# - Security Groups: Always free
 
 Parameters:
   KeyName:
-    Description: SSH Key Pair Name
+    Description: SSH Key Pair Name for EC2 access (select your key pair)
     Type: AWS::EC2::KeyPair::KeyName
+
+  LatestAmiId:
+    Description: Latest Amazon Linux 2 AMI for the current region (SSM parameter)
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+
+  InstanceType:
+    Description: EC2 Instance Type (t2.micro is free tier eligible)
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t3.micro
+      - t2.small
+      - t3.small
+    ConstraintDescription: Must be a valid EC2 instance type
+
+  VolumeSize:
+    Description: EBS Volume Size in GB (Free tier includes 30GB, default 20GB leaves room for OS)
+    Type: Number
+    Default: 20
+    MinValue: 8
+    MaxValue: 30
 
 Resources:
   ECOMMERCEInstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Allow HTTP and SSH
+      GroupDescription: Allow SSH, HTTP and service ports for the Laravel microservices
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22
@@ -22,48 +50,112 @@ Resources:
           CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
           FromPort: 8000
-          ToPort: 9000
+          ToPort: 8003
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 1025
+          ToPort: 1025
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8025
+          ToPort: 8025
           CidrIp: 0.0.0.0/0
 
   ECOMMERCEInstance:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: t2.micro
+      InstanceType: !Ref InstanceType
       KeyName: !Ref KeyName
-      ImageId: ami-0fc5d935ebf8bc3bc # Amazon Linux 2023
+      ImageId: !Ref LatestAmiId
       SecurityGroupIds:
         - !Ref ECOMMERCEInstanceSecurityGroup
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: !Ref VolumeSize
+            VolumeType: gp3
+            DeleteOnTermination: true
+            Encrypted: false
+      Tags:
+        - Key: Name
+          Value: laravel-ecommerce-instance
       UserData:
         Fn::Base64: !Sub |
-          #!/bin/bash
-          sudo yum update -y
+          #!/bin/bash -xe
+          # update
+          yum update -y
 
-          # Install Docker
-          sudo yum install -y docker
-          sudo systemctl enable docker
-          sudo systemctl start docker
-          sudo usermod -aG docker ec2-user
+          # install Docker
+          amazon-linux-extras install -y docker
+          systemctl enable docker
+          systemctl start docker
+          usermod -aG docker ec2-user
 
-          # Install Docker Compose
-          sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-linux-x86_64" \
-            -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
+          # install docker-compose (standalone binary)
+          curl -L "https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
+          chmod +x /usr/local/bin/docker-compose
+          ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose || true
 
-          # Install Git
-          sudo yum install -y git
+          # install git
+          yum install -y git
 
-          # Clone your repository
+          # give ec2-user permission to use docker without sudo in the session
+          newgrp docker <<'NEWGRP'
+          echo "docker group updated"
+          NEWGRP
+
+          # clone your repo (replace if you use a different branch)
           cd /home/ec2-user
-          git clone https://github.com/w33haa2/laravel-ecommerce ecommerce
-          cd ecommerce
+          if [ -d "laravel-ecommerce" ]; then
+            cd laravel-ecommerce
+            git pull || true
+          else
+            git clone https://github.com/w33haa2/laravel-ecommerce.git laravel-ecommerce || true
+            cd laravel-ecommerce
+          fi
 
-          # Run Docker Compose
-          sudo /usr/local/bin/docker-compose up -d --build
+          # ensure docker-compose.yml exists
+          if [ -f docker-compose.yml ]; then
+            /usr/local/bin/docker-compose down || true
+            /usr/local/bin/docker-compose build --no-cache || true
+            /usr/local/bin/docker-compose up -d
+          else
+            echo "docker-compose.yml not found in repo root"
+          fi
 
 Outputs:
   PublicIP:
-    Description: Public IP of EC2 Instance
+    Description: Public IP of EC2 instance
     Value: !GetAtt ECOMMERCEInstance.PublicIp
-  URL:
-    Description: Open your main Laravel/Vue app
+
+  InstanceId:
+    Description: EC2 Instance ID
+    Value: !Ref ECOMMERCEInstance
+
+  AppURL:
+    Description: App (frontend) URL
     Value: !Sub "http://${ECOMMERCEInstance.PublicDnsName}:8000"
+
+  CatalogURL:
+    Description: API Catalog URL
+    Value: !Sub "http://${ECOMMERCEInstance.PublicDnsName}:8001"
+
+  CheckoutURL:
+    Description: API Checkout URL
+    Value: !Sub "http://${ECOMMERCEInstance.PublicDnsName}:8002"
+
+  EmailURL:
+    Description: API Email URL
+    Value: !Sub "http://${ECOMMERCEInstance.PublicDnsName}:8003"
+
+  MailpitDashboard:
+    Description: Mailpit dashboard
+    Value: !Sub "http://${ECOMMERCEInstance.PublicDnsName}:8025"
+
+  FreeTierInfo:
+    Description: Free Tier Usage Information
+    Value: !Sub "EC2: ~730 hours/month (750 free), EBS: ${VolumeSize}GB (30GB free tier limit), Monitor in AWS Billing Dashboard"
