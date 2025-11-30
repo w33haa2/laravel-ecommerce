@@ -54,4 +54,7 @@ RUN npm run build
 
 EXPOSE 80
 
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=80"]
+COPY start-container.sh /usr/local/bin/start-container
+RUN chmod +x /usr/local/bin/start-container
+
+CMD ["start-container"]

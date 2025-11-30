@@ -53,4 +53,7 @@ RUN composer install --no-dev --optimize-autoloader
 
 EXPOSE 80
 
-ENTRYPOINT ["/var/www/html/artisan", "serve", "--host=0.0.0.0", "--port=80"]
+COPY start-container.sh /usr/local/bin/start-container
+RUN chmod +x /usr/local/bin/start-container
+
+ENTRYPOINT ["start-container"]

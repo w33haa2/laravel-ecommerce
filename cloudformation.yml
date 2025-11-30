@@ -89,6 +89,18 @@ Resources:
           # update
           yum update -y
 
+          # Create swap file (2GB) to help with memory constraints on t3.micro
+          # This helps prevent out-of-memory issues when running multiple containers
+          dd if=/dev/zero of=/swapfile bs=1M count=2048
+          chmod 600 /swapfile
+          mkswap /swapfile
+          swapon /swapfile
+          echo '/swapfile none swap sw 0 0' >> /etc/fstab
+          
+          # Set swappiness to 10 (default is 60) - less aggressive swapping
+          echo 'vm.swappiness=10' >> /etc/sysctl.conf
+          sysctl -p
+
           # install Docker
           amazon-linux-extras install -y docker
           systemctl enable docker
@@ -123,7 +135,7 @@ Resources:
 
           # Create .env files if they don't exist
           if [ ! -f app/.env ]; then
-            printf 'APP_NAME="Laravel E-commerce"\nAPP_ENV=production\nAPP_KEY=\nAPP_DEBUG=false\nAPP_URL=http://%s:8000\n\nDB_CONNECTION=mysql\nDB_HOST=mysql\nDB_PORT=3306\nDB_DATABASE=laravel\nDB_USERNAME=sail\nDB_PASSWORD=password\n\nAPI_CATALOG_URL=http://api-catalog:80\nAPI_CHECKOUT_URL=http://api-checkout:80\nAPI_EMAIL_URL=http://api-email:80\n' "$INSTANCE_DNS" > app/.env
+            printf 'APP_NAME="Laravel E-commerce"\nAPP_ENV=production\nAPP_KEY=\nAPP_DEBUG=false\nAPP_URL=http://%s\n\nDB_CONNECTION=mysql\nDB_HOST=mysql\nDB_PORT=3306\nDB_DATABASE=laravel\nDB_USERNAME=sail\nDB_PASSWORD=password\n\nAPI_CATALOG_URL=http://api-catalog:80\nAPI_CHECKOUT_URL=http://api-checkout:80\nAPI_EMAIL_URL=http://api-email:80\n' "$INSTANCE_DNS" > app/.env
           fi
 
           if [ ! -f api-catalog/.env ]; then
@@ -144,12 +156,8 @@ Resources:
             /usr/local/bin/docker-compose build --no-cache || true
             /usr/local/bin/docker-compose up -d
             
-            # Wait for containers to be ready, then generate keys
-            sleep 30
-            /usr/local/bin/docker-compose exec -T app php artisan key:generate || true
-            /usr/local/bin/docker-compose exec -T api-catalog php artisan key:generate || true
-            /usr/local/bin/docker-compose exec -T api-checkout php artisan key:generate || true
-            /usr/local/bin/docker-compose exec -T api-email php artisan key:generate || true
+            # Wait for containers to be ready
+            # key:generate and migrations are handled by the container entrypoint
           else
             echo "docker-compose.yml not found in repo root"
           fi
@@ -165,7 +173,7 @@ Outputs:
 
   AppURL:
     Description: App (frontend) URL
-    Value: !Sub "http://${ECOMMERCEInstance.PublicDnsName}:8000"
+    Value: !Sub "http://${ECOMMERCEInstance.PublicDnsName}"
 
   CatalogURL:
     Description: API Catalog URL
