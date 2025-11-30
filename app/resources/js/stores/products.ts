@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import axios from 'axios'
+import { API_CATALOG_URL } from '../config/api'
 
 export const useProductsStore = defineStore('products', () => {
     const products = ref<any[]>([])
@@ -12,7 +13,7 @@ export const useProductsStore = defineStore('products', () => {
         loading.value = true
         error.value = null
         try {
-            const response = await axios.get('http://localhost:8001/api/products')
+            const response = await axios.get(`${API_CATALOG_URL}/api/products`)
             products.value = response.data.data || response.data
         } catch (err: any) {
             error.value = err.message || 'Failed to fetch products'
@@ -26,7 +27,7 @@ export const useProductsStore = defineStore('products', () => {
         loading.value = true
         error.value = null
         try {
-            const response = await axios.get(`http://localhost:8001/api/products/${id}`)
+            const response = await axios.get(`${API_CATALOG_URL}/api/products/${id}`)
             currentProduct.value = response.data
             return response.data
         } catch (err: any) {

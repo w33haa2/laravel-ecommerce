@@ -475,15 +475,23 @@ The project includes AWS CloudFormation templates for deploying to AWS. See `api
    aws ec2 create-key-pair --key-name laravel-ecommerce
    ```
 
-3. **Deploy CloudFormation Stack**
+3. **Configure Email Credentials**
+   
+   Open `cloudformation.yml` and replace the following placeholders with your Gmail credentials:
+   - `YOUR_ADDRESS_HERE`: Your Gmail address
+   - `YOUR_PASSWORD_HERE`: Your Gmail App Password (not your login password)
+
+   > **Note**: If you have 2-Step Verification enabled on your Google Account, you must use an [App Password](https://support.google.com/accounts/answer/185833).
+
+4. **Deploy CloudFormation Stack**
    ```bash
    aws cloudformation create-stack \
      --stack-name laravel-ecommerce \
-     --template-body file://api-catalog/cloudformation.yml \
+     --template-body file://cloudformation.yml \
      --parameters ParameterKey=KeyName,ParameterValue=laravel-ecommerce
    ```
 
-4. **Access Your Application**
+5. **Access Your Application**
    ```bash
    # Get public IP
    aws cloudformation describe-stacks \

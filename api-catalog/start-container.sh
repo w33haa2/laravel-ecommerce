@@ -13,6 +13,12 @@ if [ -z "$APP_KEY" ]; then
         php artisan key:generate
     fi
 fi
+
+# Force APP_DEBUG to true to debug the issue
+export APP_DEBUG=true
+
+php artisan config:clear
+php artisan cache:clear
 php artisan migrate --force
 php artisan db:seed --class=ProductSeeder --force
 

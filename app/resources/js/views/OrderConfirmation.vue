@@ -68,6 +68,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
 import Navbar from '../components/Navbar.vue'
+import { API_CHECKOUT_URL } from '../config/api'
 
 const route = useRoute()
 const order = ref<any>(null)
@@ -76,7 +77,7 @@ const loading = ref(true)
 onMounted(async () => {
   try {
     // Fetch order details from checkout service
-    const response = await axios.get(`http://localhost:8002/api/orders/${route.params.id}`)
+    const response = await axios.get(`${API_CHECKOUT_URL}/api/orders/${route.params.id}`)
     order.value = response.data
   } catch (err) {
     console.error('Failed to fetch order:', err)

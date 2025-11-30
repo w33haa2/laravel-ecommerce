@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue'
 import axios from 'axios'
 import api from '../lib/axios'
 import { useAuthStore } from './auth'
+import { API_CHECKOUT_URL } from '../config/api'
 
 interface CartItem {
     id?: number
@@ -89,7 +90,7 @@ export const useCartStore = defineStore('cart', () => {
         try {
             // Get local cart items before fetching from server
             const localItems = [...items.value]
-            
+
             // Fetch cart from server
             const response = await api.get('/cart')
             const serverItems = response.data
@@ -150,8 +151,8 @@ export const useCartStore = defineStore('cart', () => {
             try {
                 if (existing && existing.id) {
                     // Item exists on server, update quantity
-                    const response = await api.put(`/cart/${existing.id}`, { 
-                        quantity: existing.quantity 
+                    const response = await api.put(`/cart/${existing.id}`, {
+                        quantity: existing.quantity
                     })
                     // Update local item with server response to ensure sync
                     const index = items.value.findIndex(i => i.id === existing.id)
@@ -228,7 +229,7 @@ export const useCartStore = defineStore('cart', () => {
                 price: item.price,
             }))
 
-            const response = await axios.post('http://localhost:8002/api/checkout', {
+            const response = await axios.post(`${API_CHECKOUT_URL}/api/checkout`, {
                 customer_email: customerEmail,
                 items: orderItems,
             })
@@ -247,7 +248,7 @@ export const useCartStore = defineStore('cart', () => {
                     }
                 }
             }
-            
+
             items.value = []
             localStorage.removeItem('cart')
 
