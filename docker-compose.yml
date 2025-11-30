@@ -27,6 +27,7 @@ services:
   mailpit:
     image: axllent/mailpit
     container_name: mailpit
+    restart: unless-stopped
     ports:
       - "1025:1025"
       - "8025:8025"
@@ -36,6 +37,7 @@ services:
   app:
     build: ./app
     container_name: app
+    restart: unless-stopped
     ports:
       - "8000:80"
     env_file:
@@ -49,6 +51,7 @@ services:
   api-catalog:
     build: ./api-catalog
     container_name: api-catalog
+    restart: unless-stopped
     ports:
       - "8001:80"
     env_file:
@@ -62,6 +65,7 @@ services:
   api-checkout:
     build: ./api-checkout
     container_name: api-checkout
+    restart: unless-stopped
     ports:
       - "8002:80"
     env_file:
@@ -75,6 +79,7 @@ services:
   api-email:
     build: ./api-email
     container_name: api-email
+    restart: unless-stopped
     ports:
       - "8003:80"
     env_file:

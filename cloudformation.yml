@@ -17,9 +17,9 @@ Parameters:
     Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
 
   InstanceType:
-    Description: EC2 Instance Type (t2.micro is free tier eligible)
+    Description: EC2 Instance Type (t3.micro recommended - free tier eligible with better performance)
     Type: String
-    Default: t2.micro
+    Default: t3.micro
     AllowedValues:
       - t2.micro
       - t3.micro
