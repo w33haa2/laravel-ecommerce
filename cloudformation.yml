@@ -118,11 +118,96 @@ Resources:
             cd laravel-ecommerce
           fi
 
+          # Get instance public DNS for APP_URL
+          INSTANCE_DNS=$(curl -s http://169.254.169.254/latest/meta-data/public-hostname)
+
+          # Create .env files if they don't exist
+          if [ ! -f app/.env ]; then
+            cat > app/.env << EOF
+APP_NAME="Laravel E-commerce"
+APP_ENV=production
+APP_KEY=
+APP_DEBUG=false
+APP_URL=http://${INSTANCE_DNS}:8000
+
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=laravel
+DB_USERNAME=sail
+DB_PASSWORD=password
+
+API_CATALOG_URL=http://api-catalog:80
+API_CHECKOUT_URL=http://api-checkout:80
+API_EMAIL_URL=http://api-email:80
+EOF
+          fi
+
+          if [ ! -f api-catalog/.env ]; then
+            cat > api-catalog/.env << EOF
+APP_NAME="Catalog API"
+APP_ENV=production
+APP_KEY=
+APP_DEBUG=false
+APP_URL=http://${INSTANCE_DNS}:8001
+
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=catalog_db
+DB_USERNAME=sail
+DB_PASSWORD=password
+EOF
+          fi
+
+          if [ ! -f api-checkout/.env ]; then
+            cat > api-checkout/.env << EOF
+APP_NAME="Checkout API"
+APP_ENV=production
+APP_KEY=
+APP_DEBUG=false
+APP_URL=http://${INSTANCE_DNS}:8002
+
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=checkout_db
+DB_USERNAME=sail
+DB_PASSWORD=password
+
+API_EMAIL_URL=http://api-email:80
+EOF
+          fi
+
+          if [ ! -f api-email/.env ]; then
+            cat > api-email/.env << EOF
+APP_NAME="Email API"
+APP_ENV=production
+APP_KEY=
+APP_DEBUG=false
+APP_URL=http://${INSTANCE_DNS}:8003
+
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=email_db
+DB_USERNAME=sail
+DB_PASSWORD=password
+EOF
+          fi
+
           # ensure docker-compose.yml exists
           if [ -f docker-compose.yml ]; then
             /usr/local/bin/docker-compose down || true
             /usr/local/bin/docker-compose build --no-cache || true
             /usr/local/bin/docker-compose up -d
+            
+            # Wait for containers to be ready, then generate keys
+            sleep 30
+            /usr/local/bin/docker-compose exec -T app php artisan key:generate || true
+            /usr/local/bin/docker-compose exec -T api-catalog php artisan key:generate || true
+            /usr/local/bin/docker-compose exec -T api-checkout php artisan key:generate || true
+            /usr/local/bin/docker-compose exec -T api-email php artisan key:generate || true
           else
             echo "docker-compose.yml not found in repo root"
           fi
