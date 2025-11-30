@@ -48,6 +48,9 @@ COPY . /var/www/html
 
 RUN chown -R sail:sail /var/www/html
 
+# Install dependencies
+RUN composer install --no-dev --optimize-autoloader
+
 EXPOSE 80
 
 ENTRYPOINT ["/var/www/html/artisan", "serve", "--host=0.0.0.0", "--port=80"]

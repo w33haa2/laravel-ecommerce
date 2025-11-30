@@ -123,77 +123,19 @@ Resources:
 
           # Create .env files if they don't exist
           if [ ! -f app/.env ]; then
-            cat > app/.env << EOF
-APP_NAME="Laravel E-commerce"
-APP_ENV=production
-APP_KEY=
-APP_DEBUG=false
-APP_URL=http://${INSTANCE_DNS}:8000
-
-DB_CONNECTION=mysql
-DB_HOST=mysql
-DB_PORT=3306
-DB_DATABASE=laravel
-DB_USERNAME=sail
-DB_PASSWORD=password
-
-API_CATALOG_URL=http://api-catalog:80
-API_CHECKOUT_URL=http://api-checkout:80
-API_EMAIL_URL=http://api-email:80
-EOF
+            printf 'APP_NAME="Laravel E-commerce"\nAPP_ENV=production\nAPP_KEY=\nAPP_DEBUG=false\nAPP_URL=http://%s:8000\n\nDB_CONNECTION=mysql\nDB_HOST=mysql\nDB_PORT=3306\nDB_DATABASE=laravel\nDB_USERNAME=sail\nDB_PASSWORD=password\n\nAPI_CATALOG_URL=http://api-catalog:80\nAPI_CHECKOUT_URL=http://api-checkout:80\nAPI_EMAIL_URL=http://api-email:80\n' "$INSTANCE_DNS" > app/.env
           fi
 
           if [ ! -f api-catalog/.env ]; then
-            cat > api-catalog/.env << EOF
-APP_NAME="Catalog API"
-APP_ENV=production
-APP_KEY=
-APP_DEBUG=false
-APP_URL=http://${INSTANCE_DNS}:8001
-
-DB_CONNECTION=mysql
-DB_HOST=mysql
-DB_PORT=3306
-DB_DATABASE=catalog_db
-DB_USERNAME=sail
-DB_PASSWORD=password
-EOF
+            printf 'APP_NAME="Catalog API"\nAPP_ENV=production\nAPP_KEY=\nAPP_DEBUG=false\nAPP_URL=http://%s:8001\n\nDB_CONNECTION=mysql\nDB_HOST=mysql\nDB_PORT=3306\nDB_DATABASE=catalog_db\nDB_USERNAME=sail\nDB_PASSWORD=password\n' "$INSTANCE_DNS" > api-catalog/.env
           fi
 
           if [ ! -f api-checkout/.env ]; then
-            cat > api-checkout/.env << EOF
-APP_NAME="Checkout API"
-APP_ENV=production
-APP_KEY=
-APP_DEBUG=false
-APP_URL=http://${INSTANCE_DNS}:8002
-
-DB_CONNECTION=mysql
-DB_HOST=mysql
-DB_PORT=3306
-DB_DATABASE=checkout_db
-DB_USERNAME=sail
-DB_PASSWORD=password
-
-API_EMAIL_URL=http://api-email:80
-EOF
+            printf 'APP_NAME="Checkout API"\nAPP_ENV=production\nAPP_KEY=\nAPP_DEBUG=false\nAPP_URL=http://%s:8002\n\nDB_CONNECTION=mysql\nDB_HOST=mysql\nDB_PORT=3306\nDB_DATABASE=checkout_db\nDB_USERNAME=sail\nDB_PASSWORD=password\n\nAPI_EMAIL_URL=http://api-email:80\n' "$INSTANCE_DNS" > api-checkout/.env
           fi
 
           if [ ! -f api-email/.env ]; then
-            cat > api-email/.env << EOF
-APP_NAME="Email API"
-APP_ENV=production
-APP_KEY=
-APP_DEBUG=false
-APP_URL=http://${INSTANCE_DNS}:8003
-
-DB_CONNECTION=mysql
-DB_HOST=mysql
-DB_PORT=3306
-DB_DATABASE=email_db
-DB_USERNAME=sail
-DB_PASSWORD=password
-EOF
+            printf 'APP_NAME="Email API"\nAPP_ENV=production\nAPP_KEY=\nAPP_DEBUG=false\nAPP_URL=http://%s:8003\n\nDB_CONNECTION=mysql\nDB_HOST=mysql\nDB_PORT=3306\nDB_DATABASE=email_db\nDB_USERNAME=sail\nDB_PASSWORD=password\n' "$INSTANCE_DNS" > api-email/.env
           fi
 
           # ensure docker-compose.yml exists
