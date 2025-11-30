@@ -135,19 +135,23 @@ Resources:
 
           # Create .env files if they don't exist
           if [ ! -f app/.env ]; then
-            printf 'APP_NAME="Laravel E-commerce"\nAPP_ENV=production\nAPP_KEY=\nAPP_DEBUG=false\nAPP_URL=http://%s\n\nDB_CONNECTION=mysql\nDB_HOST=mysql\nDB_PORT=3306\nDB_DATABASE=laravel\nDB_USERNAME=sail\nDB_PASSWORD=password\n\nAPI_CATALOG_URL=http://api-catalog:80\nAPI_CHECKOUT_URL=http://api-checkout:80\nAPI_EMAIL_URL=http://api-email:80\n' "$INSTANCE_DNS" > app/.env
+            APP_KEY="base64:$(openssl rand -base64 32)"
+            printf 'APP_NAME="Laravel E-commerce"\nAPP_ENV=production\nAPP_KEY=%s\nAPP_DEBUG=true\nAPP_URL=http://%s\n\nDB_CONNECTION=mysql\nDB_HOST=mysql\nDB_PORT=3306\nDB_DATABASE=laravel\nDB_USERNAME=sail\nDB_PASSWORD=password\n\nAPI_CATALOG_URL=http://api-catalog:80\nAPI_CHECKOUT_URL=http://api-checkout:80\nAPI_EMAIL_URL=http://api-email:80\n' "$APP_KEY" "$INSTANCE_DNS" > app/.env
           fi
 
           if [ ! -f api-catalog/.env ]; then
-            printf 'APP_NAME="Catalog API"\nAPP_ENV=production\nAPP_KEY=\nAPP_DEBUG=false\nAPP_URL=http://%s:8001\n\nDB_CONNECTION=mysql\nDB_HOST=mysql\nDB_PORT=3306\nDB_DATABASE=catalog_db\nDB_USERNAME=sail\nDB_PASSWORD=password\n' "$INSTANCE_DNS" > api-catalog/.env
+            APP_KEY="base64:$(openssl rand -base64 32)"
+            printf 'APP_NAME="Catalog API"\nAPP_ENV=production\nAPP_KEY=%s\nAPP_DEBUG=true\nAPP_URL=http://%s:8001\n\nDB_CONNECTION=mysql\nDB_HOST=mysql\nDB_PORT=3306\nDB_DATABASE=catalog_db\nDB_USERNAME=sail\nDB_PASSWORD=password\n' "$APP_KEY" "$INSTANCE_DNS" > api-catalog/.env
           fi
 
           if [ ! -f api-checkout/.env ]; then
-            printf 'APP_NAME="Checkout API"\nAPP_ENV=production\nAPP_KEY=\nAPP_DEBUG=false\nAPP_URL=http://%s:8002\n\nDB_CONNECTION=mysql\nDB_HOST=mysql\nDB_PORT=3306\nDB_DATABASE=checkout_db\nDB_USERNAME=sail\nDB_PASSWORD=password\n\nAPI_EMAIL_URL=http://api-email:80\n' "$INSTANCE_DNS" > api-checkout/.env
+            APP_KEY="base64:$(openssl rand -base64 32)"
+            printf 'APP_NAME="Checkout API"\nAPP_ENV=production\nAPP_KEY=%s\nAPP_DEBUG=true\nAPP_URL=http://%s:8002\n\nDB_CONNECTION=mysql\nDB_HOST=mysql\nDB_PORT=3306\nDB_DATABASE=checkout_db\nDB_USERNAME=sail\nDB_PASSWORD=password\n\nAPI_EMAIL_URL=http://api-email:80\n' "$APP_KEY" "$INSTANCE_DNS" > api-checkout/.env
           fi
 
           if [ ! -f api-email/.env ]; then
-            printf 'APP_NAME="Email API"\nAPP_ENV=production\nAPP_KEY=\nAPP_DEBUG=false\nAPP_URL=http://%s:8003\n\nDB_CONNECTION=mysql\nDB_HOST=mysql\nDB_PORT=3306\nDB_DATABASE=email_db\nDB_USERNAME=sail\nDB_PASSWORD=password\n' "$INSTANCE_DNS" > api-email/.env
+            APP_KEY="base64:$(openssl rand -base64 32)"
+            printf 'APP_NAME="Email API"\nAPP_ENV=production\nAPP_KEY=%s\nAPP_DEBUG=true\nAPP_URL=http://%s:8003\n\nDB_CONNECTION=mysql\nDB_HOST=mysql\nDB_PORT=3306\nDB_DATABASE=email_db\nDB_USERNAME=sail\nDB_PASSWORD=password\n' "$APP_KEY" "$INSTANCE_DNS" > api-email/.env
           fi
 
           # ensure docker-compose.yml exists
