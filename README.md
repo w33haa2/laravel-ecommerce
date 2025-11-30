@@ -142,8 +142,7 @@ laravel-ecommerce/
 │   │   ├── Http/Controllers/
 │   │   └── Models/
 │   ├── routes/api.php
-│   ├── Dockerfile
-│   └── cloudformation.yml        # AWS CloudFormation template
+│   └── Dockerfile
 │
 ├── api-checkout/                 # Checkout microservice
 │   ├── app/
@@ -162,6 +161,7 @@ laravel-ecommerce/
 │   └── Dockerfile
 │
 ├── docker-compose.yml            # Docker Compose configuration
+├── cloudformation.yml            # AWS CloudFormation template
 ├── create-databases.sql          # Database initialization script
 ├── LARAVEL_CONVENTIONS_ANALYSIS.md
 ├── REFACTORING_SUMMARY.md
@@ -444,12 +444,12 @@ The application runs entirely in Docker containers using Docker Compose. See [Ge
 
 ### AWS Deployment
 
-The project includes AWS CloudFormation templates for deploying to AWS. See `api-catalog/cloudformation.yml` for an example.
+The project includes AWS CloudFormation templates for deploying to AWS. See `cloudformation.yml` for an example.
 
 #### AWS Deployment Options
 
 1. **EC2 with Docker Compose** (Free Tier eligible)
-   - Use the CloudFormation template in `api-catalog/cloudformation.yml`
+   - Use the CloudFormation template in `cloudformation.yml`
    - Deploys to a single EC2 instance (t2.micro)
    - Runs all services via Docker Compose
 
